@@ -1,8 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
-/*#define _CRTDBG_MAP_ALLOC
+/*#define _crtdbg_map_alloc
 #include <stdlib.h>
-#include <crtdbg.h>*/ //uncomment this block to check for heap memory allocation leaks.
+#include <crtdbg.h>*/ // uncomment this block to check for heap memory allocation leaks.
 // Read https://docs.microsoft.com/en-us/visualstudio/debugger/finding-memory-leaks-using-the-crt-library?view=vs-2019
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,71 +12,51 @@ typedef struct StudentCourseGrade
 {
 	char courseName[35];
 	int grade;
-}StudentCourseGrade;
+} StudentCourseGrade;
 
 typedef struct Student
 {
 	char name[35];
-	StudentCourseGrade* grades; //dynamic array of courses
 	int numberOfCourses;
-}Student;
+	StudentCourseGrade* grades; // dynamic array of courses
+} Student;
 
 
-//Part A
-void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int* numberOfStudents);
-int countPipes(const char* lineBuffer, int maxCount, char terminator);
-char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents);
+// Part A
 void printStudentArray(const char* const* const* students, const int* coursesPerStudent, int numberOfStudents);
+void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int* numberOfStudents);
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor);
 void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStudents);
+int countPipes(const char* lineBuffer, int maxCount, char terminator);
+char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents);
 
-//Part B
-Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents);
+// Part B
 void writeToBinFile(const char* fileName, Student* students, int numberOfStudents);
 Student* readFromBinFile(const char* fileName);
+Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents);
 
 int main()
 {
-	//Part A
-	int* coursesPerStudent = NULL;
+	// Part A
 	int numberOfStudents = 0;
+	int* coursesPerStudent = NULL;
 	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
+	
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", +5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);
-	//studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	// studentsToFile(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 	
-	//Part B
+	// Part B
 	Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
 	writeToBinFile("students.bin", transformedStudents, numberOfStudents);
 	Student* testReadStudents = readFromBinFile("students.bin");
 
-	//add code to free all arrays of struct Student
+	// add code to free all arrays of struct Student
 
-
-	/*_CrtDumpMemoryLeaks();*/ //uncomment this block to check for heap memory allocation leaks.
+	/*_CrtDumpMemoryLeaks();*/ // uncomment this block to check for heap memory allocation leaks.
 	// Read https://docs.microsoft.com/en-us/visualstudio/debugger/finding-memory-leaks-using-the-crt-library?view=vs-2019
 
 	return 0;
-}
-
-void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
-{
-	//add code here
-}
-
-int countPipes(const char* lineBuffer, int maxCount, char terminator)
-{
-	//add code here
-}
-
-char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
-{
-	//add code here
-}
-
-void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
-{
-	//add code here
 }
 
 void printStudentArray(const char* const* const* students, const int* coursesPerStudent, int numberOfStudents)
@@ -83,6 +64,7 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 	for (int i = 0; i < numberOfStudents; i++)
 	{
 		printf("name: %s\n*********\n", students[i][0]);
+		
 		for (int j = 1; j <= 2 * coursesPerStudent[i]; j += 2)
 		{
 			printf("course: %s\n", students[i][j]);
@@ -91,8 +73,23 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 		printf("\n");
 	}
 }
-
+void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
+{
+	//add code here
+}
+void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
+{
+	//add code here
+}
 void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStudents)
+{
+	//add code here
+}
+int countPipes(const char* lineBuffer, int maxCount, char terminator)
+{
+	//add code here
+}
+char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
 {
 	//add code here
 }
@@ -101,12 +98,10 @@ void writeToBinFile(const char* fileName, Student* students, int numberOfStudent
 {
 	//add code here
 }
-
 Student* readFromBinFile(const char* fileName)
 {
 	//add code here
 }
-
 Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents)
 {
 	//add code here
