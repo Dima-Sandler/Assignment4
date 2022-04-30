@@ -44,12 +44,12 @@ int main()
 	
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", +5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);
-	// studentsToFile(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	/* studentsToFile(students, coursesPerStudent, numberOfStudents);*/ // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 	
 	// Part B
-	Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
+	/*Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
 	writeToBinFile("students.bin", transformedStudents, numberOfStudents);
-	Student* testReadStudents = readFromBinFile("students.bin");
+	Student* testReadStudents = readFromBinFile("students.bin");*/
 
 	// add code to free all arrays of struct Student
 
@@ -59,6 +59,7 @@ int main()
 	return 0;
 }
 
+// Part A
 void printStudentArray(const char* const* const* students, const int* coursesPerStudent, int numberOfStudents)
 {
 	for (int i = 0; i < numberOfStudents; i++)
@@ -85,10 +86,21 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 {
 	//add code here
 }
-int countPipes(const char* lineBuffer, int maxCount, char terminator)
-{
-	//add code here
-}
+int countPipes(const char* lineBuffer, int maxCount, char terminator) // terminator is an unused parameter
+{	
+	if (!lineBuffer) // check if lineBuffer is a null pointer
+		return -1;
+
+	int i, count = 0;
+
+	// iterate over the string until the null character is read or maxCount characters are read
+	// the loop is skipped in case of maxCount is nonpositive
+	for (i = 0; i < maxCount && lineBuffer[i] != 0; i++)
+		if (lineBuffer[i] == '|') // check if the character matches
+			count++;
+			
+	return count;
+}	
 char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
 {
 	//add code here
