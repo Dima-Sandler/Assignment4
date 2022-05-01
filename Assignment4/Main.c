@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define maxLen 1023
 /*#define _crtdbg_map_alloc
 #include <stdlib.h>
 #include <crtdbg.h>*/ // uncomment this block to check for heap memory allocation leaks.
@@ -76,7 +77,37 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 }
 void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
 {
-	//add code here
+	char line[maxLen];
+	FILE* pFile = fopen(fileName, "r");
+
+	if (!pFile) // check if the file opened successfully
+	{ 
+		puts("Failed to open file");
+		exit(1);
+	}
+		
+	*numberOfStudents = 0;
+	
+	// count the number of lines/students
+	while (!feof(pFile)) // check if EOF is reached
+		if (fgets(line, maxLen, pFile)) // check if the line is read
+			(*numberOfStudents)++;
+
+	rewind(pFile);
+
+	// create a dynamic array at the referenced location
+	*coursesPerStudent = (int*)malloc(*numberOfStudents * sizeof(int));
+
+	if (!*coursesPerStudent) // malloc check 
+	{
+		puts("Memory allocation error");
+		return;
+	}
+	
+	// count the number of pipes/courses in every line
+	for (int* ptr = *coursesPerStudent; !feof(pFile); ptr++)
+		if (fgets(line, maxLen, pFile)) // check if the line is read
+			*ptr = countPipes(line, maxLen, 0);
 }
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
 {
