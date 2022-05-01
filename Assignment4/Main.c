@@ -22,7 +22,6 @@ typedef struct Student
 	StudentCourseGrade* grades; // dynamic array of courses
 } Student;
 
-
 // Part A
 void printStudentArray(const char* const* const* students, const int* coursesPerStudent, int numberOfStudents);
 void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int* numberOfStudents);
@@ -41,8 +40,9 @@ int main()
 	// Part A
 	int numberOfStudents = 0;
 	int* coursesPerStudent = NULL;
-	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
+	countStudentsAndCourses("studentList.txt", &coursesPerStudent, &numberOfStudents);
 	
+	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", +5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);
 	/* studentsToFile(students, coursesPerStudent, numberOfStudents);*/ // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
@@ -88,8 +88,8 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 	
 	*numberOfStudents = 0;
 	
-	// count the number of lines/students
-	while (!feof(pFile)) // check if EOF is reached
+	// count the number of lines/students in the file
+	while (!feof(pFile)) // stop when EOF is reached
 		if (fgets(line, maxLen, pFile)) // check if the line is read
 			(*numberOfStudents)++;
 
@@ -104,11 +104,13 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 		exit(1);
 	}
 	
+	int* ptr = *coursesPerStudent;
+	
 	// count and save the number of pipes/courses in every line
-	while (!feof(pFile)) // check if EOF is reached
+	while (!feof(pFile)) // stop when EOF is reached
 		if (fgets(line, maxLen, pFile)) // check if the line is read
-			*(*coursesPerStudent)++ = countPipes(line, maxLen, 0);	
-
+			*ptr++ = countPipes(line, maxLen, 0);	
+	
 	fclose(pFile);	
 }
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
