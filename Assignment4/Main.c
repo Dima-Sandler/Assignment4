@@ -85,7 +85,7 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 		puts("Failed to open file");
 		exit(1);
 	}
-		
+	
 	*numberOfStudents = 0;
 	
 	// count the number of lines/students
@@ -101,13 +101,15 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 	if (!*coursesPerStudent) // malloc check 
 	{
 		puts("Memory allocation error");
-		return;
+		exit(1);
 	}
 	
-	// count the number of pipes/courses in every line
-	for (int* ptr = *coursesPerStudent; !feof(pFile); ptr++)
+	// count and save the number of pipes/courses in every line
+	while (!feof(pFile)) // check if EOF is reached
 		if (fgets(line, maxLen, pFile)) // check if the line is read
-			*ptr = countPipes(line, maxLen, 0);
+			*(*coursesPerStudent)++ = countPipes(line, maxLen, 0);	
+
+	fclose(pFile);	
 }
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
 {
@@ -125,7 +127,7 @@ int countPipes(const char* lineBuffer, int maxCount, char terminator) // termina
 	int i, count = 0;
 
 	// iterate over the string until the null character is read or maxCount characters are read
-	// the loop is skipped in case of maxCount is nonpositive
+	// if maxCount is nonpositive the loop is not executed
 	for (i = 0; i < maxCount && lineBuffer[i] != 0; i++)
 		if (lineBuffer[i] == '|') // check if the character matches
 			count++;
