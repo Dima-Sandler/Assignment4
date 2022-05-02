@@ -27,7 +27,7 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int* numberOfStudents);
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor);
 void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStudents);
-int countPipes(const char* lineBuffer, int maxCount, char terminator);
+int countPipes(const char* lineBuffer, int maxCount);
 char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents);
 
 // Part B
@@ -109,7 +109,7 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 	// count and save the number of pipes/courses in every line
 	while (!feof(pFile)) // stop when EOF is reached
 		if (fgets(line, maxLen, pFile)) // check if the line is read
-			*ptr++ = countPipes(line, maxLen, 0);	
+			*ptr++ = countPipes(line, maxLen);	
 	
 	fclose(pFile);	
 }
@@ -121,7 +121,7 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 {
 	//add code here
 }
-int countPipes(const char* lineBuffer, int maxCount, char terminator) // terminator is an unused parameter
+int countPipes(const char* lineBuffer, int maxCount)
 {	
 	if (!lineBuffer) // check if lineBuffer is a null pointer
 		return -1;
