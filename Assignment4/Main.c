@@ -1,4 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define open 0
+#define close 1
 #define maxLen 1023
 /*#define _crtdbg_map_alloc
 #include <stdlib.h>
@@ -22,6 +24,11 @@ typedef struct Student
 	StudentCourseGrade* grades; // dynamic array of courses
 } Student;
 
+// auxiliary functions
+void fcheck(FILE*, _Bool);
+void rtoa(char*, char**);
+void* xmalloc(unsigned int);
+
 // Part A
 void printStudentArray(const char* const* const* students, const int* coursesPerStudent, int numberOfStudents);
 void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int* numberOfStudents);
@@ -39,10 +46,9 @@ int main()
 {
 	// Part A
 	int numberOfStudents = 0;
-	int* coursesPerStudent = NULL;
-	countStudentsAndCourses("studentList.txt", &coursesPerStudent, &numberOfStudents);
-	
+	int* coursesPerStudent = NULL;		
 	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
+	
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", +5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);
 	/* studentsToFile(students, coursesPerStudent, numberOfStudents);*/ // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
@@ -60,58 +66,99 @@ int main()
 	return 0;
 }
 
+// auxiliary functions
+void fcheck(FILE* pFile, _Bool op)
+{
+	// check if pFile is a null pointer
+	if (!pFile)	
+	{		
+		if (op == open)
+			perror("Failed to open file");
+		else
+			perror("Failed to close file");
+	
+		exit(1);
+	}
+}
+void rtoa(char* rec, char** arr)
+{
+	char* token, * delim = "|,";
+
+	// read the first token i.e. the student name
+	token = strtok(rec, delim);
+
+	// continue to read tokens until the last one
+	do
+	{
+		// allocate memory for the token + NUL
+		*arr = (char*)xmalloc(strlen(token) + 1);
+		
+		// copy the token to the array of strings
+		// increment the array pointer afterwards
+		strcpy(*arr++, token); 	
+	} while (token = strtok(NULL, delim));
+}
+void* xmalloc(unsigned int size)
+{
+	void* ptr = (void*)malloc(size);
+
+	// check if malloc succeeded
+	if (ptr)
+		return ptr;
+	else
+	{
+		perror("Memory allocation error");
+		exit(1);
+	}
+}
+
 // Part A
 void printStudentArray(const char* const* const* students, const int* coursesPerStudent, int numberOfStudents)
 {
 	for (int i = 0; i < numberOfStudents; i++)
 	{
-		printf("name: %s\n*********\n", students[i][0]);
+		printf("name: %s\n", students[i][0]);
+		
+		// improved heading
+		for (int j = 0; j < 6 + strlen(students[i][0]); j++)
+			putchar('*');
+		putchar('\n');
 		
 		for (int j = 1; j <= 2 * coursesPerStudent[i]; j += 2)
 		{
 			printf("course: %s\n", students[i][j]);
-			printf("grade: %s\n", students[i][j + 1]);
+			printf("grade: %s\n\n", students[i][j + 1]);
 		}
-		printf("\n");
 	}
 }
 void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
 {
 	char line[maxLen];
-	FILE* pFile = fopen(fileName, "r");
-
-	if (!pFile) // check if the file opened successfully
-	{ 
-		puts("Failed to open file");
-		exit(1);
-	}
 	
+	FILE* pFile = fopen(fileName, "r");
+	fcheck(pFile, open);
+
 	*numberOfStudents = 0;
 	
 	// count the number of lines/students in the file
 	while (!feof(pFile)) // stop when EOF is reached
-		if (fgets(line, maxLen, pFile)) // check if the line is read
+		if (fgets(line, maxLen, pFile)) // read a line and check if it is read
 			(*numberOfStudents)++;
 
 	rewind(pFile);
 
 	// create a dynamic array at the referenced location
-	*coursesPerStudent = (int*)malloc(*numberOfStudents * sizeof(int));
-
-	if (!*coursesPerStudent) // malloc check 
-	{
-		puts("Memory allocation error");
-		exit(1);
-	}
+	*coursesPerStudent = (int*)xmalloc(*numberOfStudents * sizeof(int));
 	
 	int* ptr = *coursesPerStudent;
 	
 	// count and save the number of pipes/courses in every line
 	while (!feof(pFile)) // stop when EOF is reached
-		if (fgets(line, maxLen, pFile)) // check if the line is read
+		if (fgets(line, maxLen, pFile)) // read a line and check if it is read
 			*ptr++ = countPipes(line, maxLen);	
 	
-	fclose(pFile);	
+	fclose(pFile);
+	fcheck(pFile, close);
 }
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
 {
@@ -137,8 +184,37 @@ int countPipes(const char* lineBuffer, int maxCount)
 	return count;
 }	
 char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
-{
-	//add code here
+{	// assume that filename is not a null pointer nor empty string
+	char line[maxLen];
+	int stringsPerStudent;
+
+	countStudentsAndCourses(fileName, coursesPerStudent, numberOfStudents);
+	
+	// create a dynamic array of arrays of strings 
+	char*** students = (char***)xmalloc(*numberOfStudents * sizeof(char**));
+	
+	FILE* pFile = fopen(fileName, "r");
+	fcheck(pFile, open);
+	
+	// iterate over the students array
+	for (int i = 0; i < *numberOfStudents && feof(pFile) == 0;)
+	{	
+		// calculate the required number of strings
+		stringsPerStudent = 1 + 2 * (*coursesPerStudent)[i];
+		
+		// allocate memory for the array of strings
+		students[i] = (char**)xmalloc(stringsPerStudent * sizeof(char*));
+			
+		if (fgets(line, maxLen, pFile))	// read a line and check if it is read
+			// convert the line to an array of strings and save in the students array
+			// increment the array index afterwards
+			rtoa(line, students[i++]); 
+	}
+	
+	fclose(pFile);
+	fcheck(pFile, close);
+	
+	return students;
 }
 
 void writeToBinFile(const char* fileName, Student* students, int numberOfStudents)
