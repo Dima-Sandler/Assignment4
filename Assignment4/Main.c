@@ -82,10 +82,10 @@ void fcheck(FILE* pFile, _Bool op)
 }
 void rtoa(char* rec, char** arr)
 {
-	char* token, * delim = "|,";
+	char* delim = "|,";
 
 	// read the first token i.e. the student name
-	token = strtok(rec, delim);
+	char* token = strtok(rec, delim);
 
 	// continue to read tokens until the last one
 	do
@@ -150,13 +150,15 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 	// create a dynamic array at the referenced location
 	*coursesPerStudent = (int*)xmalloc(*numberOfStudents * sizeof(int));
 	
-	int* ptr = *coursesPerStudent;
+	// initialize a local pointer to the array
+	int* arr = *coursesPerStudent;
 	
 	// count and save the number of pipes/courses in every line
-	while (!feof(pFile)) // stop when EOF is reached
+	for (int i = 0; i < *numberOfStudents && !feof(pFile);)
 		if (fgets(line, maxLen, pFile)) // read a line and check if it is read
-			*ptr++ = countPipes(line, maxLen);	
-	
+			arr[i++] = countPipes(line, maxLen);
+	arr = NULL;
+
 	fclose(pFile);
 	fcheck(pFile, close);
 }
@@ -197,7 +199,7 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 	fcheck(pFile, open);
 	
 	// iterate over the students array
-	for (int i = 0; i < *numberOfStudents && feof(pFile) == 0;)
+	for (int i = 0; i < *numberOfStudents && !feof(pFile);)
 	{	
 		// calculate the required number of strings
 		stringsPerStudent = 1 + 2 * (*coursesPerStudent)[i];
