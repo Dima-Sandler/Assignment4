@@ -48,11 +48,9 @@ int main()
 	int* coursesPerStudent = NULL;		
 	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
 	
-	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", -25);
-	printStudentArray(students, coursesPerStudent, numberOfStudents);
-
-	
-	/* studentsToFile(students, coursesPerStudent, numberOfStudents); */ // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", 5);
+	printStudentArray(students, coursesPerStudent, numberOfStudents);	
+	studentsToFile(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 	
 	// Part B
 	/*Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
@@ -144,19 +142,102 @@ void factorGivenCourse(char** const* students, const int* coursesPerStudent, int
 
 		// calculate the number of strings in  array of strings
 		stringsPerStudent = 1 + 2 * coursesPerStudent[i];
-
+			 
 		// iterate over the array of strings
 		// skip the first string i.e. the student name
 		for (int j = 1; j < stringsPerStudent - 1; j += 2)
 			// check if the string pointer is valid and the string maches
 			if (students[i][j] && !strcmp(students[i][j], courseName))			
-				// convert the string to an integer, add the factor, constrain to be within the normal range, convert back to a string and save in the array of strings
+				// convert the string to an integer, add the factor, constrain to be within the range of 0-100, convert back to a string and save in the array of strings
 				_itoa(constrainGrade(atoi(students[i][j + 1]) + factor), students[i][j + 1], 10);
 	}
 }
 void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStudents)
 {
-	//add code here
+	// handle edge cases:
+	if (!students || !coursesPerStudent)
+		return;
+
+	int stringsPerStudent, lineLen = 0;
+	
+	FILE* pFile = fopen("studentList_m.txt", "w");
+	fcheck(pFile, open);
+
+	// iterate over the students array
+	// if numberOfStudents is nonpositive the loop is not executed	
+	for (int i = 0, j; i < numberOfStudents; i++)
+	{
+		if (!students[i]) // edge case check
+			continue;
+
+		// calculate the number of strings in  array of strings
+		stringsPerStudent = 1 + 2 * coursesPerStudent[i];
+
+		j = 0;
+
+		// check if the string pointer is valid
+		if (students[i][j])
+			// check if there is enough space in the line for the string
+			if (strlen(students[i][j]) < maxLen)
+			{
+				// print the first string i.e. the student name
+				lineLen = fprintf(pFile, "%s", students[i][j]);
+
+				// free the string
+				free(*students[i]);
+				students[i][j] = NULL;
+				
+				j++;
+			}
+		
+		// iterate over the array of strings
+		for (; j < stringsPerStudent -  1; j += 2)
+			// check if the strings pointer are valid
+			if (students[i][j] && students[i][j + 1])
+				// check if there is enough space left in the line for the course and the grade strings + delimiters
+				if (lineLen + strlen(students[i][j]) + strlen(students[i][j + 1]) + 2 < maxLen)
+				{
+					// print a pipe char followed by the course and the grade strings separated by ',' to the stream
+					// sum up the number of characters printed
+					lineLen += fprintf(pFile, "|%s,%s", students[i][j], students[i][j + 1]);
+
+					// free the course string
+					free(students[i][j]);
+					students[i][j] = NULL;
+
+					// free the grade string
+					free(students[i][j]);
+					students[i][j] = NULL;
+				}
+				else
+					break;
+
+		// iterate over the array of strings
+		// this loop is executed if the previous loop breaks
+		for (; j < stringsPerStudent; j++)
+		{
+			// free the string
+			free(students[i][j]);
+			students[i][j] = NULL;
+		}
+
+		// free the the array of strings
+		free(students[i]); 
+		students[i] = NULL;
+		
+		fflush(pFile); // save the printed line to the file
+	}
+
+	// free students array
+	free(students); 
+	students = NULL;
+	
+	// free coursesPerStudent array
+	free(coursesPerStudent); 
+	coursesPerStudent = NULL;
+
+	fclose(pFile);
+	fcheck(pFile, close);
 }
 char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
 {	// assume that filename is not a null pointer nor empty string
