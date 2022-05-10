@@ -24,7 +24,7 @@ typedef struct Student
 } Student;
 
 // auxiliary functions
-void fcheck(FILE*, _Bool), rtoa(char*, char**), * xmalloc(unsigned int);
+void fcheck(FILE*, _Bool), rtoa(char*, char**), freeStrings(char** arr, int size), * xmalloc(unsigned int);
 int constrainGrade(int);
 
 // Part A
@@ -158,95 +158,110 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 	if (!students || !coursesPerStudent)
 		return;
 
-	int stringsPerStudent, lineLen = 0;
+	int stringsPerStudent, fileSize, nameLen = 0, lineLen = 0;
 	char* fileName = "studentList_m.txt";
 
 	FILE* pFile = fopen(fileName, "w");
 	fcheck(pFile, OPEN);
 
+	// req 4: the file should not contain 2 students with the same name
+	// delete duplicate students
+	for (int i = 0; i < numberOfStudents - 1; i++)
+		for (int j = i + 1; j < numberOfStudents; j++)
+			if (!strcmp(*students[i], *students[j]))
+			{
+				freeStrings(students[j], 1 + 2 * coursesPerStudent[j]);
+				free(students[j]);
+				
+				students[j] = NULL;
+			}
+
 	// iterate over the students array
 	// if numberOfStudents is nonpositive the loop is not executed	
 	for (int i = 0, j; i < numberOfStudents; i++)
 	{
-		if (!students[i]) // edge case check
+		if (!students[i]) // check if the array of strings pointer is valid
 			continue;
 
-		// calculate the number of strings in  array of strings
+		// calculate the number of strings in array of strings
 		stringsPerStudent = 1 + 2 * coursesPerStudent[i];
 
-		j = 0;
-
 		// check if the string pointer is valid and the string is not empty
-		if (students[i][j] && *students[i][j])
-			// check if there is enough space in the line for the string
-			if (strlen(students[i][j]) < maxLen)
+		if (students[i][0] && *students[i][0])
+			// req 1: line length should not exceed 1023 characters
+			// check if there is enough space in the line for the name string
+			if (strlen(students[i][0]) < maxLen)
 			{
 				// print the first string i.e. the student name
-				lineLen = fprintf(pFile, "%s", students[i][j]);
+				// save the number of characters printed
+				lineLen = nameLen = fprintf(pFile, "%s", students[i][0]);
 
-				// free the string
-				free(*students[i]);
-				students[i][j] = NULL;
-
-				j++;
+				// free the name string
+				freeStrings(students[i], 1);
 			}
+			
+		// req 4: the record must have a name
+		// check if the name wasn`t printed
+		if (!nameLen)
+		{
+			// free all the strings and the array of strings
+			freeStrings(students[i], stringsPerStudent);
+			free(students[i]);
+			
+			students[i] = NULL;
+			
+			continue; // continue to the next student
+		}
 
 		// iterate over the array of strings
-		for (; j >= 1 && j < stringsPerStudent - 1; j += 2)
+		for (j = 1 ;j < stringsPerStudent - 1; j += 2)
+			// req 5: the record cannot have a course without grade or a grade only
 			// check if the strings pointer are valid and the strings are not empty
-			if (students[i][j] && *students[i][j] && students[i][j + 1] && *students[i][j])
-				// check if there is enough space left in the line for the course and the grade strings + delimiters
+			if (students[i][j] && *students[i][j] && students[i][j + 1] && *students[i][j + 1])
+				// req 1: line length should not exceed 1023 characters
+				// check if there is enough space left in the line for the strings + delimiters
 				if (lineLen + strlen(students[i][j]) + strlen(students[i][j + 1]) + 2 < maxLen)
 				{
-					// print a pipe char followed by the course and the grade strings separated by ',' to the stream
+					// print a pipe char followed by the course and the grade strings separated by ','
 					// sum the number of characters printed
 					lineLen += fprintf(pFile, "|%s,%s", students[i][j], students[i][j + 1]);
 
-					// free the course string
-					free(students[i][j]);
-					students[i][j] = NULL;
-
-					// free the grade string
-					free(students[i][j]);
-					students[i][j] = NULL;
+					// free the course and the grade strings
+					freeStrings(students[i] + j, 2);
 				}
 				else
-					break;
+					// free the rest of the strings
+					freeStrings(students[i] + j, stringsPerStudent);
 
-		// iterate over the array of strings
-		// this loop is executed if the previous loop breaks
-		for (; j < stringsPerStudent; j++)
-		{
-			// free the string
-			free(students[i][j]);
-			students[i][j] = NULL;
-		}
-
-		// free the the array of strings
+		// free the array of strings
 		free(students[i]);
 		students[i] = NULL;
-
-		if (j > 1) // line must contain at least 1 course
-			fflush(pFile); // save the printed line to the file
-		else
-			fseek(pFile, lineLen, SEEK_CUR); // return the position pointer to the start of the line
+		
+		// req 4: the record must have at least 1 course
+		// check if any course/es were printed
+		if (lineLen > nameLen)
+		{   // save the printed line in the file and print a new line
+			fflush(pFile); 
+			fputc('\n', pFile);
+		}
+		else // no courses were printed
+			 // return the position pointer to the start of the line
+			fseek(pFile, -lineLen, SEEK_CUR);
 	}
 
-	// free students array
+	// free the students and coursesPerStudent array array
 	free(students);
-	students = NULL;
-
-	// free coursesPerStudent array
 	free(coursesPerStudent);
-	coursesPerStudent = NULL;
+	students = (void*)coursesPerStudent = NULL;
 
-	int size = ftell(pFile);
+	fileSize = ftell(pFile);
 
 	fclose(pFile);
 	fcheck(pFile, CLOSE);
 
+	// req 2: the file should not be empty
 	// check if the file is empty
-	if (!size)
+	if (!fileSize)
 		if (remove(fileName))
 		{
 			perror("Failed to remove file");
@@ -276,9 +291,13 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 		students[i] = (char**)xmalloc(stringsPerStudent * sizeof(char*));
 			
 		if (fgets(line, maxLen, pFile))	// read a line and check if it is read
+		{
+			line[strlen(line) - 1] = 0; // delete the end of line character
+
 			// convert the line to an array of strings and save in the students array
 			// increment the array index afterwards
-			rtoa(line, students[i++]); 
+			rtoa(line, students[i++]);
+		}
 	}
 	
 	fclose(pFile);
@@ -347,6 +366,16 @@ void rtoa(char* rec, char** arr)
 		// increment the array pointer afterwards
 		strcpy(*arr++, token);
 	} while (token = strtok(NULL, delim));
+}
+void freeStrings(char** arr, int size)
+{
+	for (int i = 0; i < size; i++)
+	{
+		free(arr[i]);
+		arr[i] = NULL;
+	}
+
+	arr = NULL;
 }
 void* xmalloc(unsigned int size)
 {
