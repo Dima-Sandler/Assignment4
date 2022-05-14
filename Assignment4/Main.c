@@ -154,7 +154,7 @@ void factorGivenCourse(char** const* students, const int* coursesPerStudent, int
 	}
 }
 void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStudents)
-{	// assume that students is a valid pointer to a proper array representation of the students records file that meets the description of the file studentList.txt
+{	// assume that students is a valid pointer to a proper array representation of a students records file that meets the description of the file studentList.txt
 	int stringsPerStudent;
 
 	FILE* pFile = fopen("studentList_m.txt", "w");
@@ -249,7 +249,7 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 				// free the name string
 				freeStrings(students[i], 1);
 			}
-			
+
 		// req 4: the record must contain the student name
 		// check if the name wasn`t printed
 		if (!nameLen)
@@ -257,14 +257,14 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 			// free all the strings and the array of strings
 			freeStrings(students[i], stringsPerStudent);
 			free(students[i]);
-			
+
 			students[i] = NULL;
-			
+
 			continue; // continue to the next student
 		}
 
 		// iterate over the array of strings
-		for (j = 1 ;j < stringsPerStudent - 1; j += 2)
+		for (j = 1; j < stringsPerStudent - 1; j += 2)
 			// req 5: the record cannot have a course without grade or a grade only
 			// check if the strings pointer are valid and the strings are not empty
 			if (students[i][j] && *students[i][j] && students[i][j + 1] && *students[i][j + 1])
@@ -280,8 +280,11 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 					freeStrings(students[i] + j, 2);
 				}
 				else
+				{
 					// free the rest of the strings
 					freeStrings(students[i] + j, stringsPerStudent);
+					break;
+				}
 
 		// free the array of strings
 		free(students[i]);
