@@ -32,6 +32,7 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int* numberOfStudents);
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor);
 void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStudents);
+void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStudents);
 char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents);
 int countPipes(const char* lineBuffer, int maxCount);
 
@@ -48,9 +49,9 @@ int main()
 	int* coursesPerStudent = NULL;		
 	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
 		
-	//factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", 5);
+	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", 5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);	
-	studentsToFile(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	studentsToFile_s(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 	
 	// Part B
 	/*Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
@@ -153,7 +154,56 @@ void factorGivenCourse(char** const* students, const int* coursesPerStudent, int
 	}
 }
 void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStudents)
-{
+{	// assume that students is a valid pointer to a proper array representation of the students records file that meets the description of the file studentList.txt
+	int stringsPerStudent;
+
+	FILE* pFile = fopen("studentList_m.txt", "w");
+	fcheck(pFile, OPEN);
+
+	// iterate over the students array
+	for (int i = 0, j; i < numberOfStudents; i++)
+	{
+		// calculate the number of strings in the array of strings
+		stringsPerStudent = 1 + 2 * coursesPerStudent[i];
+
+		// print the first string i.e. the student name
+		fprintf(pFile, "%s", students[i][0]);
+
+		// free the name string
+		freeStrings(students[i], 1);
+
+		// iterate over the array of strings
+		for (j = 1; j < stringsPerStudent - 1; j += 2)
+		{
+			// print a pipe char followed by the course and the grade strings separated by ','
+			// sum the number of characters printed
+			fprintf(pFile, "|%s,%s", students[i][j], students[i][j + 1]);
+
+			// free the course and the grade strings
+			freeStrings(students[i] + j, 2);
+		}
+
+		// free the array of strings
+		free(students[i]);
+		students[i] = NULL;
+
+		// save the printed line and print a newline character
+		fflush(pFile);
+		fputc('\n', pFile);
+	}
+
+	// free the students and coursesPerStudent array
+	free(students);
+	students = NULL;
+	
+	free(coursesPerStudent);
+	coursesPerStudent = NULL;
+
+	fclose(pFile);
+	fcheck(pFile, CLOSE);
+}
+void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStudents)
+{ // this safe version will ensure than the new file will meet all the requirements
 	// handle edge cases:
 	if (!students || !coursesPerStudent)
 		return;
@@ -165,7 +215,7 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 	fcheck(pFile, OPEN);
 
 	// req 4: the file should not contain 2 students with the same name
-	// delete duplicate students
+	// delete duplicate students is any
 	for (int i = 0; i < numberOfStudents - 1; i++)
 		for (int j = i + 1; j < numberOfStudents; j++)
 			if (!strcmp(*students[i], *students[j]))
@@ -183,7 +233,7 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 		if (!students[i]) // check if the array of strings pointer is valid
 			continue;
 
-		// calculate the number of strings in array of strings
+		// calculate the number of strings in the array of strings
 		stringsPerStudent = 1 + 2 * coursesPerStudent[i];
 
 		// check if the string pointer is valid and the string is not empty
@@ -200,7 +250,7 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 				freeStrings(students[i], 1);
 			}
 			
-		// req 4: the record must have a name
+		// req 4: the record must contain the student name
 		// check if the name wasn`t printed
 		if (!nameLen)
 		{
@@ -240,7 +290,7 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 		// req 4: the record must have at least 1 course
 		// check if any course/es were printed
 		if (lineLen > nameLen)
-		{   // save the printed line in the file and print a new line
+		{   // save the printed line and print a newline char
 			fflush(pFile); 
 			fputc('\n', pFile);
 		}
@@ -249,12 +299,13 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 			fseek(pFile, -lineLen, SEEK_CUR);
 	}
 
-	// free the students and coursesPerStudent array array
+	// free the students and coursesPerStudent array
 	free(students);
 	free(coursesPerStudent);
 	students = (void*)coursesPerStudent = NULL;
 
-	fileSize = ftell(pFile);
+	// obtain the file size
+	fileSize = ftell(pFile); 
 
 	fclose(pFile);
 	fcheck(pFile, CLOSE);
