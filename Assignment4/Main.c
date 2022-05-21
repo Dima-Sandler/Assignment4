@@ -51,7 +51,7 @@ int main()
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", 5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);	
 	studentsToFile_s(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
-	
+
 	// Part B
 	/*Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
 	writeToBinFile("students.bin", transformedStudents, numberOfStudents);
@@ -77,7 +77,7 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 			putchar('*');
 		putchar('\n');
 		
-		for (int j = 1; j <= 2 * coursesPerStudent[i]; j += 2)
+		for (int j = 1; j <= 2 * coursesPerStudent[i] - 1; j += 2)
 		{
 			printf("course: %s\n", students[i][j]);
 			printf("grade: %s\n\n", students[i][j + 1]);
@@ -372,15 +372,13 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 			
 		if (fgets(line, maxLen, pFile))	// read a line and check if it is read
 		{
-			line[strlen(line) - 1] = 0; // delete the end of line character
+			if (i != *numberOfStudents - 1)			
+				line[strlen(line) - 1] = 0; // delete the new line character
 
 			// convert the line to an array of strings and save in the students array
 			rtoa(line, students[i]);
 		}
 	}
-	
-	fclose(pFile);
-	fcheck(pFile, close);
 	
 	return students;
 }
