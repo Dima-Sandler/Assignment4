@@ -104,5 +104,27 @@ Student* readFromBinFile(const char* fileName)
 }
 Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents)
 {
-	//add code here
+	if (students == NULL || coursesPerStudent == NULL) {
+		return NULL;
+	}
+	Student* arr = (Student*)malloc(numberOfStudents*sizeof(Student));
+	if (!arr) {
+		printf("allocation failed");
+		return NULL;
+	}
+	
+	for (int i = 0; i < numberOfStudents; i++) {
+		strcpy(arr[i].name, students[i][0]);
+		arr[i].grades = (StudentCourseGrade*)malloc(coursesPerStudent[i] * sizeof(StudentCourseGrade));
+		if (!arr[i].grades) {
+				printf("allocation failed");
+				return NULL;
+			}
+		for (int j = 1; j < coursesPerStudent[i]-1; j+=2){
+			strcpy(arr[i].grades[j].courseName, students[i][j]);
+			arr[i].grades[j].grade = atoi(students[i][j + 1]);
+		}
+		arr[i].numberOfCourses = coursesPerStudent[i];
+	}
+	return arr;
 }
