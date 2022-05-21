@@ -96,12 +96,17 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 
 void writeToBinFile(const char* fileName, Student* students, int numberOfStudents)
 {
-	//add code here
+	if (fileName == NULL || students == NULL) {
+		return;
+	}
+
 }
+
 Student* readFromBinFile(const char* fileName)
 {
 	//add code here
 }
+
 Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents)
 {
 	if (students == NULL || coursesPerStudent == NULL) {
