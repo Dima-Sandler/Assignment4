@@ -50,12 +50,12 @@ int main()
 		
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", 5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);	
-	studentsToFile(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	//studentsToFile(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 
 	// Part B
-	/*Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
+	Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
 	writeToBinFile("students.bin", transformedStudents, numberOfStudents);
-	Student* testReadStudents = readFromBinFile("students.bin");*/
+	Student* testReadStudents = readFromBinFile("students.bin");
 
 	// add code to free all arrays of struct Student
 
@@ -430,9 +430,9 @@ Student* transformStudentArray(char*** students, const int* coursesPerStudent, i
 				printf("allocation failed");
 				return NULL;
 			}
-		for (int j = 1; j < coursesPerStudent[i]-1; j+=2){
-			strcpy(arr[i].grades[j].courseName, students[i][j]);
-			arr[i].grades[j].grade = atoi(students[i][j + 1]);
+		for (int j = 1, k = 0; j < 2*coursesPerStudent[i]; j+=2, k++){
+			strcpy(arr[i].grades[k].courseName, students[i][j]);
+			arr[i].grades[k].grade = atoi(students[i][j + 1]);
 		}
 		arr[i].numberOfCourses = coursesPerStudent[i];
 	}
