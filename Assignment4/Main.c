@@ -50,7 +50,7 @@ int main()
 		
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", 5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);	
-	studentsToFile_s(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	studentsToFile(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 
 	// Part B
 	/*Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
@@ -467,7 +467,7 @@ void freeStudents(char*** arr, int size)
 void* xmalloc(unsigned int size)
 {
 	void* ptr = (void*)malloc(size);
-
+	
 	// check if malloc succeeded
 	if (ptr)
 		return ptr;
