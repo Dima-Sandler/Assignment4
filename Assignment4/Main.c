@@ -404,12 +404,59 @@ void writeToBinFile(const char* fileName, Student* students, int numberOfStudent
 	if (fileName == NULL || students == NULL) {
 		return;
 	}
-
+	FILE* pFile = fopen("studentList_m.txt", "w");
+	if (!pFile) {
+		printf("Unable to open file!");
+	}
+	else
+	{	
+		fwrite(&numberOfStudents, sizeof(int), 1, pFile);
+		for (int i = 1; i <= numberOfStudents; i++) {
+			fwrite(students[i].name, 35 * sizeof(char), 1, pFile);
+			fwrite(&students[i].numberOfCourses, sizeof(int), 1, pFile);
+			int numberOfCourses = students[i].numberOfCourses;
+			for (int j = 1; j <= students[i].numberOfCourses; j++) {
+				fwrite(students[i].grades[j].courseName, 35 * sizeof(char), 1, pFile);
+				fwrite(&students[i].grades[j].grade, sizeof(int), 1, pFile);
+			}
+		}
+	}
+		fclose(pFile);
 }
 
 Student* readFromBinFile(const char* fileName)
 {
-	//add code here
+	FILE* pFile = fopen("studentList_m.txt", "r");
+	if (!pFile) {
+		printf("Unable to open file!");
+	}
+	else
+	{
+		Student* Sstudents = (Student*)malloc(numberOfStudents * sizeof(Student));
+		if (!Sstudents) {
+			printf("allocation failed");
+			return NULL;
+		}
+		int numberOfStudents = 0;
+		fread(&numberOfStudents, sizeof(int), 1, pFile);
+		for (int i = 1; i <= numberOfStudents; i++) {
+			fread(Sstudents[i].name, 35 * sizeof(char), 1, pFile);
+			fread(&Sstudents[i].numberOfCourses, sizeof(int), 1, pFile);
+		}
+		int numberOfCourses = Sstudents[i].numberOfCourses;
+		Sstudents[i].grades = (StudentCourseGrade*)malloc(studentsStruct[i].numberOfCourses * sizeof(StudentCourseGrade));
+		if (!Sstudents[i].grades) {
+			printf("allocation failed");
+			return NULL;
+		}
+		for (int j = 1; j <= Sstudents[i].numberOfCourses; j++)
+			{
+				fread(Sstudents[i].grades[j].courseName, 35 * sizeof(char), 1, pFile);
+				fread(&Sstudents[i].grades[j].grade, sizeof(int), 1, pFile);
+			}
+	}
+	fclose(pFile);
+	return Sstudents;
 }
 
 Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents)
