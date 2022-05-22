@@ -169,7 +169,7 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 	
 	int stringsPerStudent;
 
-	FILE* pFile = fopen("studentList_m.txt", "w");
+	FILE* pFile = fopen("studentList.txt", "w");
 	fcheck(pFile, open);
 
 	// iterate over the students array
@@ -235,7 +235,7 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 	}
 
 	int stringsPerStudent, fileSize, nameLen = 0, lineLen = 0;
-	char* fileName = "studentList_m.txt";
+	char* fileName = "studentList.txt";
 
 	FILE* pFile = fopen(fileName, "w");
 	fcheck(pFile, open);
