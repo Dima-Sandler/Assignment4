@@ -432,19 +432,19 @@ Student* readFromBinFile(const char* fileName)
 	}
 	else
 	{
+		int numberOfStudents = 0; 
 		Student* Sstudents = (Student*)malloc(numberOfStudents * sizeof(Student));
 		if (!Sstudents) {
 			printf("allocation failed");
 			return NULL;
 		}
-		int numberOfStudents = 0;
 		fread(&numberOfStudents, sizeof(int), 1, pFile);
 		for (int i = 1; i <= numberOfStudents; i++) {
 			fread(Sstudents[i].name, 35 * sizeof(char), 1, pFile);
 			fread(&Sstudents[i].numberOfCourses, sizeof(int), 1, pFile);
 		}
 		int numberOfCourses = Sstudents[i].numberOfCourses;
-		Sstudents[i].grades = (StudentCourseGrade*)malloc(studentsStruct[i].numberOfCourses * sizeof(StudentCourseGrade));
+		Sstudents[i].grades = (StudentCourseGrade*)malloc(Sstudents[i].numberOfCourses * sizeof(StudentCourseGrade));
 		if (!Sstudents[i].grades) {
 			printf("allocation failed");
 			return NULL;
