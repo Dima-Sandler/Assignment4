@@ -432,32 +432,103 @@ Student* readFromBinFile(const char* fileName)
 	}
 	else
 	{
-		int numberOfStudents = 0; 
+		int numberOfStudents = 0;
+		fread(&numberOfStudents, sizeof(int), 1, pFile);
 		Student* Sstudents = (Student*)malloc(numberOfStudents * sizeof(Student));
 		if (!Sstudents) {
 			printf("allocation failed");
 			return NULL;
 		}
-		fread(&numberOfStudents, sizeof(int), 1, pFile);
+		
 		for (int i = 1; i <= numberOfStudents; i++) {
 			fread(Sstudents[i].name, 35 * sizeof(char), 1, pFile);
 			fread(&Sstudents[i].numberOfCourses, sizeof(int), 1, pFile);
-		}
-		int numberOfCourses = Sstudents[i].numberOfCourses;
-		Sstudents[i].grades = (StudentCourseGrade*)malloc(Sstudents[i].numberOfCourses * sizeof(StudentCourseGrade));
-		if (!Sstudents[i].grades) {
-			printf("allocation failed");
-			return NULL;
-		}
-		for (int j = 1; j <= Sstudents[i].numberOfCourses; j++)
-			{
-				fread(Sstudents[i].grades[j].courseName, 35 * sizeof(char), 1, pFile);
-				fread(&Sstudents[i].grades[j].grade, sizeof(int), 1, pFile);
+			Sstudents[i].grades = (StudentCourseGrade*)malloc(Sstudents[i].numberOfCourses * sizeof(StudentCourseGrade));
+			if (!Sstudents[i].grades) {
+				printf("allocation failed");
+				return NULL;
 			}
-	}
-	fclose(pFile);
-	return Sstudents;
+			int numberOfCourses = Sstudents[i].numberOfCourses;
+			for (int j = 1; j <= Sstudents[i].numberOfCourses; j++)
+				{
+					fread(Sstudents[i].grades[j].courseName, 35 * sizeof(char), 1, pFile);
+					fread(&Sstudents[i].grades[j].grade, sizeof(int), 1, pFile);
+				}
+		}
+		fclose(pFile);
+		return Sstudents;
 }
+
+//Student* readFromBinFile(const char* fileName)
+//{
+//	FILE* fp = fopen("studentList.bin", "rb");
+//	if (fp == NULL) { printf("Can't open file\n"); exit(1); }
+//	int numberOfStudents = 0;
+//	fread(&numberOfStudents, sizeof(int), 1, fp);
+//	Student* studentsStruct = (Student*)malloc(numberOfStudents * sizeof(Student));
+//	if (!studentsStruct) { printf("memory allocation error"); exit(1); }
+//	for (int i = 0; i < numberOfStudents; i++)
+//	{
+//		fread(studentsStruct[i].name, 35 * sizeof(char), 1, fp);
+//		fread(&studentsStruct[i].numberOfCourses, sizeof(int), 1, fp);
+//		studentsStruct[i].grades = (StudentCourseGrade*)malloc(studentsStruct[i].numberOfCourses * sizeof(StudentCourseGrade));
+//		if (!studentsStruct[i].grades) { printf("memory allocation error"); exit(1); }
+//		int numberOfCourses = studentsStruct[i].numberOfCourses;
+//		for (int j = 0; j < studentsStruct[i].numberOfCourses; j++)
+//		{
+//			fread(studentsStruct[i].grades[j].courseName, 35 * sizeof(char), 1, fp);
+//			fread(&studentsStruct[i].grades[j].grade, sizeof(int), 1, fp);
+//		}
+//	}
+//
+//	assert(fclose(fp)==0);
+//
+//	return studentsStruct;
+//}
+
+//Student* readFromBinFile(const char* fileName)
+//{
+//	// open file for binary reading
+//	FILE* fp = fopen("studentList.bin", "rb");
+//	if (fp == NULL) { printf("Can't open file\n"); exit(1); }
+//
+//	// get number of students
+//	int numberOfStudents = 0;
+//	fread(&numberOfStudents, sizeof(int), 1, fp);
+//
+//	// assign memory for students struct
+//	Student* studentsStruct = (Student*)malloc(numberOfStudents * sizeof(Student));
+//	if (!studentsStruct) { printf("memory allocation error"); exit(1); }
+//
+//	for (int i = 0; i < numberOfStudents; i++)
+//	{
+//		// get student name
+//		fread(studentsStruct[i].name, 35 * sizeof(char), 1, fp);
+//
+//		// get student numbers of courses
+//		fread(&studentsStruct[i].numberOfCourses, sizeof(int), 1, fp);
+//
+//		// assign memory for grades
+//		studentsStruct[i].grades = (StudentCourseGrade*)malloc(studentsStruct[i].numberOfCourses * sizeof(StudentCourseGrade));
+//		if (!studentsStruct[i].grades) { printf("memory allocation error"); exit(1); }
+//
+//		// get courses
+//		int numberOfCourses = studentsStruct[i].numberOfCourses;
+//		for (int j = 0; j < studentsStruct[i].numberOfCourses; j++)
+//		{
+//			// write course name
+//			fread(studentsStruct[i].grades[j].courseName, 35 * sizeof(char), 1, fp);
+//
+//			// write course grade
+//			fread(&studentsStruct[i].grades[j].grade, sizeof(int), 1, fp);
+//		}
+//	}
+//
+//	assert(fclose(fp) == 0);
+//
+//	return studentsStruct;
+//}
+
 
 Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents)
 {
