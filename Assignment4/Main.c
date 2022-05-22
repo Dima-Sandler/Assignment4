@@ -404,7 +404,7 @@ void writeToBinFile(const char* fileName, Student* students, int numberOfStudent
 	if (fileName == NULL || students == NULL) {
 		return;
 	}
-	FILE* pFile = fopen("studentList_m.txt", "w");
+	FILE* pFile = fopen("students.bin", "w");
 	if (!pFile) {
 		printf("Unable to open file!");
 	}
@@ -421,40 +421,38 @@ void writeToBinFile(const char* fileName, Student* students, int numberOfStudent
 			}
 		}
 	}
-		fclose(pFile);
+	fclose(pFile);
 }
 
 Student* readFromBinFile(const char* fileName)
 {
-	FILE* pFile = fopen("studentList_m.txt", "r");
+	FILE* pFile = fopen("students.bin", "r");
 	if (!pFile) {
 		printf("Unable to open file!");
 	}
-	else
-	{
+		int numberOfStudents = 0;
+		fread(&numberOfStudents, sizeof(int), 1, pFile);
 		Student* Sstudents = (Student*)malloc(numberOfStudents * sizeof(Student));
 		if (!Sstudents) {
 			printf("allocation failed");
 			return NULL;
 		}
-		int numberOfStudents = 0;
-		fread(&numberOfStudents, sizeof(int), 1, pFile);
+
 		for (int i = 1; i <= numberOfStudents; i++) {
 			fread(Sstudents[i].name, 35 * sizeof(char), 1, pFile);
 			fread(&Sstudents[i].numberOfCourses, sizeof(int), 1, pFile);
-		}
-		int numberOfCourses = Sstudents[i].numberOfCourses;
-		Sstudents[i].grades = (StudentCourseGrade*)malloc(studentsStruct[i].numberOfCourses * sizeof(StudentCourseGrade));
-		if (!Sstudents[i].grades) {
-			printf("allocation failed");
-			return NULL;
-		}
-		for (int j = 1; j <= Sstudents[i].numberOfCourses; j++)
+			Sstudents[i].grades = (StudentCourseGrade*)malloc(Sstudents[i].numberOfCourses * sizeof(StudentCourseGrade));
+			if (!Sstudents[i].grades) {
+				printf("allocation failed");
+				return NULL;
+			}
+			int numberOfCourses = Sstudents[i].numberOfCourses;
+			for (int j = 1; j <= Sstudents[i].numberOfCourses; j++)
 			{
 				fread(Sstudents[i].grades[j].courseName, 35 * sizeof(char), 1, pFile);
 				fread(&Sstudents[i].grades[j].grade, sizeof(int), 1, pFile);
 			}
-	}
+		}
 	fclose(pFile);
 	return Sstudents;
 }
