@@ -404,7 +404,7 @@ void writeToBinFile(const char* fileName, Student* students, int numberOfStudent
 	if (fileName == NULL || students == NULL) {
 		return;
 	}
-	FILE* pFile = fopen("studentList_m.txt", "w");
+	FILE* pFile = fopen("students.bin", "w");
 	if (!pFile) {
 		printf("Unable to open file!");
 	}
@@ -421,12 +421,12 @@ void writeToBinFile(const char* fileName, Student* students, int numberOfStudent
 			}
 		}
 	}
-		fclose(pFile);
+	fclose(pFile);
 }
 
 Student* readFromBinFile(const char* fileName)
 {
-	FILE* pFile = fopen("studentList_m.txt", "r");
+	FILE* pFile = fopen("students.bin", "r");
 	if (!pFile) {
 		printf("Unable to open file!");
 	}
