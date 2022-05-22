@@ -455,12 +455,9 @@ Student* readFromBinFile(const char* fileName)
 					fread(&Sstudents[i].grades[j].grade, sizeof(int), 1, pFile);
 				}
 		}
-		fclose(pFile);
-		return Sstudents;
+	fclose(pFile);
+	return Sstudents;
 }
-
-
-
 
 Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents)
 {
