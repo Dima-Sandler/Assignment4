@@ -27,6 +27,7 @@ typedef struct Student
 void fcheck(FILE*, _Bool), rtoa(char*, char**), freeStrings(char** arr, int size), freeStudents(char***, int), * xmalloc(unsigned int);
 int constrainGrade(int);
 
+// Part A
 void printStudentArray(const char* const* const* students, const int* coursesPerStudent, int numberOfStudents);
 void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int* numberOfStudents);
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor);
@@ -35,20 +36,26 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents);
 int countPipes(const char* lineBuffer, int maxCount);
 
+// Part B
+void writeToBinFile(const char* fileName, Student* students, int numberOfStudents);
+Student* readFromBinFile(const char* fileName);
+Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents);
+
 int main()
 {
+	// Part A
 	int numberOfStudents = 0;
 	int* coursesPerStudent = NULL;		
 	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
 		
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", 5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);	
-	//studentsToFile(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	studentsToFile(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 
 	// Part B
-	Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
+	/*Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
 	writeToBinFile("students.bin", transformedStudents, numberOfStudents);
-	Student* testReadStudents = readFromBinFile("students.bin");
+	Student* testReadStudents = readFromBinFile("students.bin");*/
 
 	// add code to free all arrays of struct Student
 
@@ -58,6 +65,7 @@ int main()
 	return 0;
 }
 
+// Part A
 void printStudentArray(const char* const* const* students, const int* coursesPerStudent, int numberOfStudents)
 {
 	for (int i = 0; i < numberOfStudents; i++)
