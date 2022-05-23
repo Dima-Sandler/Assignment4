@@ -50,7 +50,7 @@ int main()
 		
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", 5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);	
-	studentsToFile(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	studentsToFile_s(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 
 	// Part B
 	/*Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
@@ -169,15 +169,19 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 	
 	int stringsPerStudent;
 
-	FILE* pFile = fopen("studentList.txt", "w");
+	FILE* pFile = fopen("studentList_m.txt", "w");
 	fcheck(pFile, open);
 
 	// iterate over the students array
 	for (int i = 0, j; i < numberOfStudents; i++)
-	{
+	{				
 		// calculate the number of strings in the array of strings
 		stringsPerStudent = 1 + 2 * coursesPerStudent[i];
 
+		// print a newline if the file is not epmty
+		if (ftell(pFile))
+			fputc('\n', pFile);
+		
 		// print the first string i.e. the student name
 		fprintf(pFile, "%s", students[i][0]);
 
@@ -188,7 +192,6 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 		for (j = 1; j < stringsPerStudent - 1; j += 2)
 		{
 			// print a pipe char followed by the course and the grade strings separated by ','
-			// sum the number of characters printed
 			fprintf(pFile, "|%s,%s", students[i][j], students[i][j + 1]);
 
 			// free the course and the grade strings
@@ -199,9 +202,8 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 		free(students[i]);
 		students[i] = NULL;
 
-		// save the printed line and print a newline character
+		// save the printed line
 		fflush(pFile);
-		fputc('\n', pFile);
 	}
 
 	// free the students and coursesPerStudent array
@@ -234,8 +236,8 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 		exit(1);
 	}
 
-	int stringsPerStudent, fileSize, nameLen = 0, lineLen = 0;
-	char* fileName = "studentList.txt";
+	int stringsPerStudent, fileSize, nameLen, lineLen = 0;
+	char* fileName = "studentList_m.txt";
 
 	FILE* pFile = fopen(fileName, "w");
 	fcheck(pFile, open);
@@ -258,6 +260,7 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 
 		// calculate the number of strings in the array of strings
 		stringsPerStudent = 1 + 2 * coursesPerStudent[i];
+		nameLen = 0;
 
 		// check if the string pointer is valid and the string is not empty
 		if (students[i][0] && *students[i][0])
@@ -265,6 +268,10 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 			// check if there is enough space in the line for the string
 			if (strlen(students[i][0]) < maxLen)
 			{
+				// print a newline if neccessary
+				if (lineLen)
+					fputc('\n', pFile);
+				
 				// print the first string i.e. the student name
 				// save the number of characters printed
 				lineLen = nameLen = fprintf(pFile, "%s", students[i][0]);
@@ -313,13 +320,11 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 		// req 4: the record must contain at least 1 course
 		// check if the line is longer then the name 
 		if (lineLen > nameLen)
-		{   // save the printed line and print a newline char
-			fflush(pFile); 
-			fputc('\n', pFile);
-		}
+		   // save the printed line
+			fflush(pFile);
 		else // no courses were printed
-			 // return the position pointer to the start of the line
-			fseek(pFile, -lineLen, SEEK_CUR);
+			 // return the position pointer to the end of the previous line
+			fseek(pFile, -(lineLen + 1), SEEK_CUR);
 	}
 
 	// free the students and coursesPerStudent array
@@ -423,7 +428,6 @@ void writeToBinFile(const char* fileName, Student* students, int numberOfStudent
 	}
 	fclose(pFile);
 }
-
 Student* readFromBinFile(const char* fileName)
 {
 	FILE* pFile = fopen("students.bin", "r");
@@ -456,7 +460,6 @@ Student* readFromBinFile(const char* fileName)
 	fclose(pFile);
 	return Sstudents;
 }
-
 Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents)
 {
 	if (students == NULL || coursesPerStudent == NULL) {
