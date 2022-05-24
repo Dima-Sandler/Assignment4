@@ -24,7 +24,7 @@ typedef struct Student
 } Student;
 
 // auxiliary functions
-void fcheck(FILE*, _Bool), rtoa(char*, char**), freeStrings(char** arr, int size), freeStudents(char***, int), * xmalloc(unsigned int);
+void fcheck(FILE*, _Bool), rtoa(char*, char**), freeStrings(char** arr, int size), freeRecords(char***, int), * xmalloc(unsigned int);
 int constrainGrade(int);
 
 // Part A
@@ -45,12 +45,12 @@ int main()
 {
 	// Part A
 	int numberOfStudents = 0;
-	int* coursesPerStudent = NULL;		
+	int* coursesPerStudent = NULL;
 	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
-		
+
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", 5);
-	printStudentArray(students, coursesPerStudent, numberOfStudents);	
-	studentsToFile_s(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	printStudentArray(students, coursesPerStudent, numberOfStudents);
+	studentsToFile(students, coursesPerStudent, numberOfStudents); // this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 
 	// Part B
 	/*Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
@@ -71,12 +71,12 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 	for (int i = 0; i < numberOfStudents; i++)
 	{
 		printf("name: %s\n", students[i][0]);
-		
+
 		// improved heading
 		for (int j = 0; j < 6 + strlen(students[i][0]); j++)
 			putchar('*');
 		putchar('\n');
-		
+
 		for (int j = 1; j <= 2 * coursesPerStudent[i] - 1; j += 2)
 		{
 			printf("course: %s\n", students[i][j]);
@@ -87,12 +87,12 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
 {
 	char line[maxLen];
-	
+
 	FILE* pFile = fopen(fileName, "r");
 	fcheck(pFile, open);
 
 	*numberOfStudents = 0;
-	
+
 	// count the number of lines/students in the file
 	while (!feof(pFile)) // stop when EOF is reached
 		if (fgets(line, maxLen, pFile)) // read a line and check if it is read
@@ -102,10 +102,10 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 
 	// create a dynamic array at the referenced location
 	*coursesPerStudent = (int*)xmalloc(*numberOfStudents * sizeof(int));
-	
+
 	// initialize a local pointer to the array
 	int* arr = *coursesPerStudent;
-	
+
 	// count and save the number of pipes/courses in every line
 	for (int i = 0; i < *numberOfStudents && !feof(pFile); i++)
 		if (fgets(line, maxLen, pFile)) // read a line and check if it is read
@@ -117,9 +117,9 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 }
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
 {	// the elements of the students array (char**) are constant
-	     
+
 	// handle edge cases:
-	if (!students || !coursesPerStudent || !courseName )
+	if (!students || !coursesPerStudent || !courseName)
 		return;
 
 	// chck if factor is valid
@@ -128,9 +128,9 @@ void factorGivenCourse(char** const* students, const int* coursesPerStudent, int
 		puts("Invalid factor value\n");
 		return;
 	}
-	
+
 	int stringsPerStudent;
-	
+
 	// iterate over the students array
 	for (int i = 0; i < numberOfStudents; i++)
 	{
@@ -139,11 +139,11 @@ void factorGivenCourse(char** const* students, const int* coursesPerStudent, int
 
 		// calculate the number of strings in  array of strings
 		stringsPerStudent = 1 + 2 * coursesPerStudent[i];
-			 
+
 		// iterate over the array of strings from the second string
 		for (int j = 1; j < stringsPerStudent - 1; j += 2)
 			// check if the string pointer is valid and the string maches
-			if (students[i][j] && !strcmp(students[i][j], courseName))			
+			if (students[i][j] && !strcmp(students[i][j], courseName))
 				// convert the string to an integer, add the factor, constrain to be within the range, convert back to a string and save in the array of strings
 				_itoa(constrainGrade(atoi(students[i][j + 1]) + factor), students[i][j + 1], 10);
 	}
@@ -160,28 +160,28 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 	}
 	if (!coursesPerStudent)
 	{
-		freeStudents(students, numberOfStudents);
+		freeRecords(students, numberOfStudents);
 		students = NULL;
 
 		puts("Unable to deallocate memory");
 		exit(1);
 	}
-	
+
 	int stringsPerStudent;
 
-	FILE* pFile = fopen("studentList_m.txt", "w");
+	FILE* pFile = fopen("studentList.txt", "w");
 	fcheck(pFile, open);
 
 	// iterate over the students array
 	for (int i = 0, j; i < numberOfStudents; i++)
-	{				
+	{
 		// calculate the number of strings in the array of strings
 		stringsPerStudent = 1 + 2 * coursesPerStudent[i];
 
 		// print a newline if the file is not epmty
 		if (ftell(pFile))
 			fputc('\n', pFile);
-		
+
 		// print the first string i.e. the student name
 		fprintf(pFile, "%s", students[i][0]);
 
@@ -209,7 +209,7 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 	// free the students and coursesPerStudent array
 	free(students);
 	students = NULL;
-	
+
 	free(coursesPerStudent);
 	coursesPerStudent = NULL;
 
@@ -223,20 +223,20 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 	{
 		free(coursesPerStudent);
 		coursesPerStudent = NULL;
-	
+
 		return;
 	}
 
 	if (!coursesPerStudent)
 	{
-		freeStudents(students, numberOfStudents);
+		freeRecords(students, numberOfStudents);
 		students = NULL;
 
 		puts("Unable to deallocate memory");
 		exit(1);
 	}
 
-	int stringsPerStudent, fileSize, nameLen, lineLen = 0;
+	int stringsPerStudent, nameLen = 0, lineLen = 0, fileLen = 0;
 	char* fileName = "studentList_m.txt";
 
 	FILE* pFile = fopen(fileName, "w");
@@ -249,11 +249,11 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 			if (!strcmp(*students[i], *students[j]))
 			{
 				freeStrings(students[j], 1 + 2 * coursesPerStudent[j]);
-				freeStudents(students + j, 1);
+				freeRecords(students + j, 1);
 			}
 
 	// iterate over the students array
-	for (int i = 0, j; i < numberOfStudents; i++)
+	for (int i = 0; i < numberOfStudents; i++)
 	{
 		if (!students[i]) // check if the array of strings pointer is valid
 			continue;
@@ -271,7 +271,7 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 				// print a newline if neccessary
 				if (lineLen)
 					fputc('\n', pFile);
-				
+
 				// print the first string i.e. the student name
 				// save the number of characters printed
 				lineLen = nameLen = fprintf(pFile, "%s", students[i][0]);
@@ -286,63 +286,66 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 		{
 			// free all the strings and the array of strings
 			freeStrings(students[i], stringsPerStudent);
-			freeStudents(students + i, 1);
+			freeRecords(students + i, 1);
 
 			continue; // continue to the next student
 		}
 
 		// iterate over the array of strings from the second string
-		for (j = 1; j < stringsPerStudent - 1; j += 2)
-			// req 5: the record cannot have a course without grade or a grade only
-			// check if the strings pointer are valid and the strings are not empty
-			if (students[i][j] && *students[i][j] && students[i][j + 1] && *students[i][j + 1])
-				// req 1: line length should not exceed 1023 characters
-				// check if there is enough space left in the line for the strings + delimiters
-				if (lineLen + strlen(students[i][j]) + strlen(students[i][j + 1]) + 2 < maxLen)
-				{
-					// print a pipe char followed by the course and the grade strings separated by ','
-					// sum the number of characters printed
-					lineLen += fprintf(pFile, "|%s,%s", students[i][j], students[i][j + 1]);
+		for (int j = 1; j < stringsPerStudent - 1; j += 2)
+			// req 5: the record cannot contain a course without grade or a grade only
+			// check if the strings pointers are valid
+			if (students[i][j] && students[i][j + 1])
+			{
+				// check if the strings are not empty
+				if (*students[i][j] && *students[i][j + 1])
+					// req 1: line length should not exceed 1023 characters
+					// check if there is enough space left in the line for the strings + delimiters				
+					if (lineLen + strlen(students[i][j]) + strlen(students[i][j + 1]) + 2 < maxLen)
+					{
+						// print a pipe char followed by the course and the grade strings separated by ','
+						// sum the number of characters printed
+						lineLen += fprintf(pFile, "|%s,%s", students[i][j], students[i][j + 1]);
+						fileLen += 2 + lineLen;
+					}
+					else
+					{
+						// free the rest of the strings
+						freeStrings(students[i] + j, stringsPerStudent);
+						break;
+					}
 
-					// free the course and the grade strings
-					freeStrings(students[i] + j, 2);
-				}
-				else
-				{
-					// free the rest of the strings
-					freeStrings(students[i] + j, stringsPerStudent);
-					break;
-				}
+				// free the course and the grade strings
+				freeStrings(students[i] + j, 2);
+			}
+
 
 		// free the array of strings
-		freeStudents(students + i, 1);
-		
+		freeRecords(students + i, 1);
+
 		// req 4: the record must contain at least 1 course
 		// check if the line is longer then the name 
 		if (lineLen > nameLen)
-		   // save the printed line
+			// save the printed line
 			fflush(pFile);
 		else // no courses were printed
-			 // return the position pointer to the end of the previous line
-			fseek(pFile, -(lineLen + 1), SEEK_CUR);
+			// return the position pointer to the end of the previous line
+			fseek(pFile, -lineLen - 2, SEEK_CUR);
 	}
 
 	// free the students and coursesPerStudent array
 	free(students);
 	students = NULL;
-	
+
 	free(coursesPerStudent);
 	coursesPerStudent = NULL;
-
-	// obtain the file size
-	fileSize = ftell(pFile); 
 
 	fclose(pFile);
 	fcheck(pFile, close);
 
 	// req 2: the file should not be empty
 	// check if the file is empty
-	if (!fileSize)
+	if (!fileLen)
 		if (remove(fileName))
 		{
 			perror("Failed to remove file");
@@ -350,45 +353,40 @@ void studentsToFile_s(char*** students, int* coursesPerStudent, int numberOfStud
 		}
 }
 char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
-{	
+{
 	// handle edge cases:
 	if (!coursesPerStudent || !numberOfStudents)
 		return NULL;
-	
+
 	char line[maxLen];
 	int stringsPerStudent;
 
 	countStudentsAndCourses(fileName, coursesPerStudent, numberOfStudents);
-	
+
 	// create a dynamic array of arrays of strings 
 	char*** students = (char***)xmalloc(*numberOfStudents * sizeof(char**));
-	
+
 	FILE* pFile = fopen(fileName, "r");
 	fcheck(pFile, open);
-	
+
 	// iterate over the students array
 	for (int i = 0; i < *numberOfStudents && !feof(pFile); i++)
-	{	
+	{
 		// calculate the required number of strings
 		stringsPerStudent = 1 + 2 * (*coursesPerStudent)[i];
-		
+
 		// allocate memory for the array of strings
 		students[i] = (char**)xmalloc(stringsPerStudent * sizeof(char*));
-			
-		if (fgets(line, maxLen, pFile))	// read a line and check if it is read
-		{
-			if (i != *numberOfStudents - 1)			
-				line[strlen(line) - 1] = 0; // delete the new line character
 
+		if (fgets(line, maxLen, pFile))	// read a line and check if it is read
 			// convert the line to an array of strings and save in the students array
 			rtoa(line, students[i]);
-		}
 	}
-	
+
 	return students;
 }
 int countPipes(const char* lineBuffer, int maxCount)
-{	
+{
 	if (!lineBuffer) // check if lineBuffer is a null pointer
 		return -1;
 
@@ -399,9 +397,9 @@ int countPipes(const char* lineBuffer, int maxCount)
 	for (i = 0; i < maxCount && lineBuffer[i] != 0; i++)
 		if (lineBuffer[i] == '|') // check if the character matches
 			count++;
-			
+
 	return count;
-}	
+}
 
 // Part B
 void writeToBinFile(const char* fileName, Student* students, int numberOfStudents)
@@ -414,7 +412,7 @@ void writeToBinFile(const char* fileName, Student* students, int numberOfStudent
 		printf("Unable to open file!");
 	}
 	else
-	{	
+	{
 		fwrite(&numberOfStudents, sizeof(int), 1, pFile);
 		for (int i = 1; i <= numberOfStudents; i++) {
 			fwrite(students[i].name, 35 * sizeof(char), 1, pFile);
@@ -434,29 +432,29 @@ Student* readFromBinFile(const char* fileName)
 	if (!pFile) {
 		printf("Unable to open file!");
 	}
-		int numberOfStudents = 0;
-		fread(&numberOfStudents, sizeof(int), 1, pFile);
-		Student* Sstudents = (Student*)malloc(numberOfStudents * sizeof(Student));
-		if (!Sstudents) {
+	int numberOfStudents = 0;
+	fread(&numberOfStudents, sizeof(int), 1, pFile);
+	Student* Sstudents = (Student*)malloc(numberOfStudents * sizeof(Student));
+	if (!Sstudents) {
+		printf("allocation failed");
+		return NULL;
+	}
+
+	for (int i = 1; i <= numberOfStudents; i++) {
+		fread(Sstudents[i].name, 35 * sizeof(char), 1, pFile);
+		fread(&Sstudents[i].numberOfCourses, sizeof(int), 1, pFile);
+		Sstudents[i].grades = (StudentCourseGrade*)malloc(Sstudents[i].numberOfCourses * sizeof(StudentCourseGrade));
+		if (!Sstudents[i].grades) {
 			printf("allocation failed");
 			return NULL;
 		}
-
-		for (int i = 1; i <= numberOfStudents; i++) {
-			fread(Sstudents[i].name, 35 * sizeof(char), 1, pFile);
-			fread(&Sstudents[i].numberOfCourses, sizeof(int), 1, pFile);
-			Sstudents[i].grades = (StudentCourseGrade*)malloc(Sstudents[i].numberOfCourses * sizeof(StudentCourseGrade));
-			if (!Sstudents[i].grades) {
-				printf("allocation failed");
-				return NULL;
-			}
-			int numberOfCourses = Sstudents[i].numberOfCourses;
-			for (int j = 1; j <= Sstudents[i].numberOfCourses; j++)
-			{
-				fread(Sstudents[i].grades[j].courseName, 35 * sizeof(char), 1, pFile);
-				fread(&Sstudents[i].grades[j].grade, sizeof(int), 1, pFile);
-			}
+		int numberOfCourses = Sstudents[i].numberOfCourses;
+		for (int j = 1; j <= Sstudents[i].numberOfCourses; j++)
+		{
+			fread(Sstudents[i].grades[j].courseName, 35 * sizeof(char), 1, pFile);
+			fread(&Sstudents[i].grades[j].grade, sizeof(int), 1, pFile);
 		}
+	}
 	fclose(pFile);
 	return Sstudents;
 }
@@ -465,20 +463,20 @@ Student* transformStudentArray(char*** students, const int* coursesPerStudent, i
 	if (students == NULL || coursesPerStudent == NULL) {
 		return NULL;
 	}
-	Student* arr = (Student*)malloc(numberOfStudents*sizeof(Student));
+	Student* arr = (Student*)malloc(numberOfStudents * sizeof(Student));
 	if (!arr) {
 		printf("allocation failed");
 		return NULL;
 	}
-	
+
 	for (int i = 0; i < numberOfStudents; i++) {
 		strcpy(arr[i].name, students[i][0]);
 		arr[i].grades = (StudentCourseGrade*)malloc(coursesPerStudent[i] * sizeof(StudentCourseGrade));
 		if (!arr[i].grades) {
-				printf("allocation failed");
-				return NULL;
-			}
-		for (int j = 1, k = 0; j < 2*coursesPerStudent[i]; j+=2, k++){
+			printf("allocation failed");
+			return NULL;
+		}
+		for (int j = 1, k = 0; j < 2 * coursesPerStudent[i]; j += 2, k++) {
 			strcpy(arr[i].grades[k].courseName, students[i][j]);
 			arr[i].grades[k].grade = atoi(students[i][j + 1]);
 		}
@@ -495,15 +493,15 @@ void fcheck(FILE* pFile, _Bool op)
 	{
 		if (op == open)
 			perror("Failed to open file");
-		else 
+		else
 			perror("Failed to close file");
-		
+
 		exit(1);
 	}
 }
 void rtoa(char* rec, char** arr)
 {
-	char* delim = "|,";
+	char* delim = "|,\n";
 
 	// read the first token i.e. the student name
 	char* token = strtok(rec, delim);
@@ -519,9 +517,9 @@ void rtoa(char* rec, char** arr)
 		strcpy(*arr++, token);
 	} while (token = strtok(NULL, delim));
 }
-void freeStrings(char** arr, int size)
+void freeStrings(char** arr, int cnt)
 {
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < cnt; i++)
 	{
 		free(arr[i]);
 		arr[i] = NULL;
@@ -529,9 +527,9 @@ void freeStrings(char** arr, int size)
 
 	arr = NULL;
 }
-void freeStudents(char*** arr, int size)
+void freeRecords(char*** arr, int cnt)
 {
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < cnt; i++)
 	{
 		free(arr[i]);
 		arr[i] = NULL;
@@ -542,7 +540,7 @@ void freeStudents(char*** arr, int size)
 void* xmalloc(unsigned int size)
 {
 	void* ptr = (void*)malloc(size);
-	
+
 	// check if malloc succeeded
 	if (ptr)
 		return ptr;
